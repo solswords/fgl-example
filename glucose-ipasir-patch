@@ -1,0 +1,10 @@
+32,33c32,33
+< CXXFLAGS= -g -std=c++11 -Wall -DNDEBUG -O3
+< 
+---
+> CXXFLAGS= -g -std=c++11 -Wall -DNDEBUG -O3 -fPIC
+> export CXXFLAGS
+70c70
+< 	$(CXX) -g  -std=c++11 $(CXXLAGS) \
+---
+> 	$(CXX) -g  -std=c++11 $(CXXFLAGS) \

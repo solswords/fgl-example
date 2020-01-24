@@ -1,0 +1,71 @@
+
+These instructions strongly assume you are running a Unix-like OS with
+a full set of build tools (gcc (version >= 6.0), GNU make, perl,
+patch, etc) and weakly assume you're using the bash shell on Linux on
+x86-64. The specific platform can be adjusted by substituting a
+different name for the CCL executable, e.g., for OSX on x86-64,
+substitute "dx86cl64" for "lx86cl64". The shell can likely be adjusted
+just by replacing "export" commands with whatever is appropriate for
+your shell, e.g. "setenv" for csh.
+
+Instructions
+==================
+Starting from the base directory of this repository:
+         BASEDIR=`pwd`
+Make a bin dir inside it and add it to your path:
+         mkdir bin
+         export PATH=$BASEDIR/bin:$PATH   # adjust if your shell isn't bash
+
+Build the requirements.
+ * Lisp -- CCL or SBCL recommended.  Instructions for CCL:
+    - Download appropriate archive from https://github.com/Clozure/ccl/releases/tag/v1.11.5
+         tar xf ccl-1.11.5-linuxx86.tar.gz
+         cd ccl; ./lx86cl64
+      Type (quit) to exit if that works.
+      If the bundled executable lx86cl64 doesn't run out of the box, then rebuild:
+         cd lisp-kernel/linuxx8664; make
+      Link it as "ccl" in your bin directory:
+         ln -s $BASEDIR/ccl/lx86cl64 $BASEDIR/bin/ccl
+ * ACL2 and community books from github (https://github.com/acl2/acl2, commit hash 812c28b)
+         cd $BASEDIR
+         git clone https://github.com/acl2/acl2.git acl2
+	 cd acl2
+	 git checkout -b fgl 812c28bae6e34ebbeac59919a8a0ea49b3fafb27
+         make LISP=ccl
+         ln -s $BASEDIR/acl2/saved_acl2 $BASEDIR/bin/acl2
+ * Glucose SAT solver executable (in path under "glucose") from https://www.labri.fr/perso/lsimon/glucose/
+         cd $BASEDIR
+         tar xf glucose-syrup-4.1.tgz
+         cd glucose-syrup-4.1/simp; make r
+         ln -s $BASEDIR/bin/glucose-syrup-4.1/simp/glucose_release $BASEDIR/bin/glucose
+ * Glucose SAT solver, IPASIR-compatible, dynamic library
+    - Download 2017 SAT competition version of the glucose ipasir library--
+      https://baldur.iti.kit.edu/sat-competition-2017/solvers/incremental/glucose-ipasir.zip
+         cd $BASEDIR
+         mkdir glucose_ipasir; cd glucose_ipasir
+         unzip ../glucose-ipasir.zip
+         cd sat/glucose4
+      Apply the patch to the makefile so we can build a shared library from the static library it produces:
+         patch makefile ../../../glucose-ipasir-patch 
+         make
+      Build the shared library -- may need to adjust for your OS:
+         g++ -shared -Wl,-soname,libipasirglucose4.so -o libipasirglucose4.so ipasirglucoseglue.o libipasirglucose4.a
+      Set the IPASIR_SHARED_LIBRARY environment variable to the resulting file:
+         export IPASIR_SHARED_LIBRARY=$BASEDIR/glucose_ipasir/sat/glucose4/libipasirglucose4.so
+
+Once all these are set up, certify the ACL2 books needed for the example:
+         cd $BASEDIR
+         ./acl2/books/build/cert.pl -p example.lisp
+  This will take a long time to build! You may wish to add e.g. "-j 4"
+  to the cert.pl command line for 4-way parallelism.  Then it might
+  take ~15 minutes, depending.
+
+When the books have all built successfully, run acl2 and input the example script.
+  You may type
+     (ld "example.lisp")
+  to load the whole file, or copy+paste forms one by one.
+  If you use the LD command, then afterward submit
+     (in-package "FGL")
+  to continue in the same package.
+  Note: Events that try to prove the correctness of *bitcount-bug* will fail; this is intentional.
+
