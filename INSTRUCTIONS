@@ -30,7 +30,7 @@ Build the requirements.
          cd $BASEDIR
          git clone https://github.com/acl2/acl2.git acl2
 	 cd acl2
-	 git checkout -b fgl 812c28bae6e34ebbeac59919a8a0ea49b3fafb27
+	 git checkout -b fgl e8ef1bd7d81425cdd665f95a9b19018e347812db
          make LISP=ccl
          ln -s $BASEDIR/acl2/saved_acl2 $BASEDIR/bin/acl2
  * Glucose SAT solver executable (in path under "glucose") from https://www.labri.fr/perso/lsimon/glucose/
